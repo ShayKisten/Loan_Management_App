@@ -1,101 +1,98 @@
-import Image from "next/image";
 
+"use client";
+import { useEffect, useState } from 'react';
+import { cn } from "@/lib/utils" 
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
+import { useToast } from "@/hooks/use-toast"
+import { createUser } from '@/actions/user';
+
+interface User { 
+  firstName: string;
+  lastName: string; 
+  email: string;
+  password: string;
+}
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const { toast } = useToast();
+  const [PasswordFocused, setPasswordFocused] = useState(false);
+  const [NewUser, setNewUser] = useState<User>({
+          firstName: '',
+          lastName: '',
+          email: '',
+          password: ''
+  });
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+  function userValueChanged(e: React.ChangeEvent<HTMLInputElement>) {
+    const { id, value } = e.target;
+    setNewUser((prevUser) => {
+        return { ...prevUser, [id]: value };
+    });
+  }
+
+  const createUserClicked = async() => {
+    const createdUserResponse = await createUser(NewUser);
+    if (!createdUserResponse.success){
+        toast({
+            variant: 'destructive',
+            title: 'Uh oh! Something went wrong.',
+            description: createdUserResponse.error,
+        });
+        return
+    }else{
+        toast({
+            title: 'Success',
+            description: 'User Created Successfully, you can log in',
+        });
+    }
+  }
+  return (
+    <div className="p-4 flex flex-col items-center gap-2">
+      <h1 className="text-4xl font-bold">Welcome to the Loan Management Dashboard</h1>
+      <h2 className='text-xl'>To get login, click the Login button at the top right of your screen</h2>
+
+      <p className='text-gray-500'>To the team testing this project, please use the this form to create a user so that you can begin assessing this project.</p>
+      <p className='text-gray-500'>Please note that I have left out all validations on this form to streamline your testing, however please make sure the db you will be using has been configured.</p>
+
+      <div className="flex justify-center items-center h-full w-full mt-[20px]">
+        <Card className={cn("w-full md:w-[80%] md:flex-row", "md:items-start")}>
+            <CardHeader className="text-center">
+                <CardTitle>Add User</CardTitle>
+            </CardHeader>
+            <CardContent className="md:grid md:grid-cols-2 md:gap-5 overflow-scroll">
+                <div>
+                    <label htmlFor='firstName' className="block text-xs font-medium text-gray-700 mb-[5px]">First Name*</label>
+                    <Input type='text' placeholder='First Name' id='firstName' value={NewUser.firstName} onChange={userValueChanged} />
+                </div>
+                <div>
+                    <label htmlFor='lastName' className="block text-xs font-medium text-gray-700 mb-[5px]">Last Name*</label>
+                    <Input type='text' placeholder='Last Name' id='lastName' value={NewUser.lastName} onChange={userValueChanged} />
+                </div>
+                <div>
+                    <label htmlFor='email' className="block text-xs font-medium text-gray-700 mb-[5px]">Email*</label>
+                    <Input type='text' placeholder='Email' id='email' value={NewUser.email} onChange={userValueChanged} />
+                </div>
+                <div>
+                    <label htmlFor='password' className="block text-xs font-medium text-gray-700 mb-[5px]">Password*</label>
+                    <Input type='password' placeholder='Password' id='password' value={NewUser.password} onChange={userValueChanged} onFocus={() => {setPasswordFocused(true);}} onBlur={() => {setPasswordFocused(false);}} />
+                    {PasswordFocused ? 
+                    <div className='w-full p-5 mt-1 rounded-b-[8px] shadow-lg flex flex-col items-start gap-3'>
+                        <p className='text-sm' style={{color: `${/^.{8,}$/.test(NewUser.password) ? 'green' : 'red'}`}}>8 Characters</p>
+                        <p className='text-sm' style={{color: `${/^(?=.*[A-Z]).*$/.test(NewUser.password) ? 'green' : 'red'}`}}>Capital Letter</p>
+                        <p className='text-sm' style={{color: `${/^(?=.*[a-z]).*$/.test(NewUser.password) ? 'green' : 'red'}`}}>Lowercase Letter</p>
+                        <p className='text-sm' style={{color: `${/^(?=.*[@$!%*?&])/.test(NewUser.password) ? 'green' : 'red'}`}}>Special Character</p>
+                        <p className='text-sm' style={{color: `${/^(?=.*\d).*$/.test(NewUser.password) ? 'green' : 'red'}`}}>Number</p>
+                    </div>
+                    :null}
+                </div>
+                
+                <div className="col-span-2 mt-5">
+                    <Button className='w-full' onClick={createUserClicked}>Save</Button>
+                </div>
+            </CardContent>
+        </Card>
+    </div>
     </div>
   );
 }

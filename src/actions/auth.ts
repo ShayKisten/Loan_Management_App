@@ -10,7 +10,7 @@ export async function userLogin(email: string, password: string) : Promise<{ suc
   try {
     const user = await prisma.user.findUnique({
       where: {
-        email,
+        email
       },
     });
 

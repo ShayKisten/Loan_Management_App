@@ -53,3 +53,78 @@ export const getAllLoanProducts = async() => {
         return { success: false, error: 'Failed to retrieve loan products' };
     }
 }
+
+export const getLoanProductById = async(id: number) => {
+    try {
+        const loanProduct = await prisma.loanProduct.findUnique({
+            where: { 
+                id 
+            }
+        })
+        if (loanProduct){
+            const plainLoanProduct = {
+                ...loanProduct,
+                interestRate: loanProduct.interestRate.toNumber(),
+                maxAmount: loanProduct.maxAmount.toNumber(),
+                minAmount: loanProduct.minAmount ? loanProduct.minAmount.toNumber() : 0,
+                initiationFee: loanProduct.initiationFee.toNumber(),
+                otherFee: loanProduct.otherFee ? loanProduct.otherFee.toNumber() : 0,
+            }
+            return { success: true, loanProduct: plainLoanProduct };
+        }
+        return { success: false, error: 'Loan product not found'};
+        
+    } catch (error) {
+        console.error("Loan Product Retrieval Error:", error);
+        return { success: false, error: 'Failed to retrieve loan product' };
+    }
+}
+
+export const updateLoanProductById = async(id: number, loanProductData: LoanProductInterface) => {
+    try {
+        const loanProduct = await prisma.loanProduct.update({
+            where: { id },
+            data: loanProductData
+        })
+        if (loanProduct){
+            const plainLoanProduct = {
+                ...loanProduct,
+                interestRate: loanProduct.interestRate.toNumber(),
+                maxAmount: loanProduct.maxAmount.toNumber(),
+                minAmount: loanProduct.minAmount ? loanProduct.minAmount.toNumber() : 0,
+                initiationFee: loanProduct.initiationFee.toNumber(),
+                otherFee: loanProduct.otherFee ? loanProduct.otherFee.toNumber() : 0,
+            }
+            return { success: true, loanProduct: plainLoanProduct };
+        }
+        return { success: false, error: 'Loan product update failed'};
+    } catch (error) {
+        console.error("Loan Product Update Error:", error);
+        return { success: false, error: 'Failed to update loan product' };
+    }
+}
+
+export const deleteLoanProductById = async(id: number) => {
+    try {
+        let loanProduct = await prisma.loanProduct.delete({
+            where: { 
+                id 
+            }
+        })
+        if (loanProduct){
+            const plainLoanProduct = {
+                ...loanProduct,
+                interestRate: loanProduct.interestRate.toNumber(),
+                maxAmount: loanProduct.maxAmount.toNumber(),
+                minAmount: loanProduct.minAmount ? loanProduct.minAmount.toNumber() : 0,
+                initiationFee: loanProduct.initiationFee.toNumber(),
+                otherFee: loanProduct.otherFee ? loanProduct.otherFee.toNumber() : 0,
+            }
+            return { success: true, loanProduct: plainLoanProduct };
+        }
+        return { success: false, error: 'Loan product delete failed'};
+    } catch (error) {
+        console.error("Loan Product Delete Error:", error);
+        return { success: false, error: 'Failed to delete loan product' };
+    }
+}

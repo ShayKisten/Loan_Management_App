@@ -18,7 +18,7 @@ export default function RootLayout({children,}: Readonly<{children: React.ReactN
               <Menu />
             </div>
           </div>
-          <main className="pt-20 h-full overflow-hidden">
+          <main className="mt-[10dvh] h-[90dvh] overflow-y-scroll">
             {children}
           </main>
           <Toaster />

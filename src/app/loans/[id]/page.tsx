@@ -1,36 +1,39 @@
 "use client";
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import { cn } from "@/lib/utils" 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from '@/components/ui/textarea';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
-import {Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue,} from "@/components/ui/select"
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog"
 import { useToast } from "@/hooks/use-toast"
-import { createLoanProduct } from '@/actions/loan';
+import { updateLoanProductById, getLoanProductById, deleteLoanProductById } from '@/actions/loan';
 import { FaArrowLeft } from 'react-icons/fa';
 
 interface Loan {
+    id: number;
     name: string;
-    description: string;
+    description: string | null; 
     interestRate: number;
     term: number;
     maxAmount: number;
-    minAmount: number;
+    minAmount: number | null;
     type: string;
     status: string;
     initiationFee: number;
-    otherFee: number;
-    [key: string]: string | number;
+    otherFee: number | null;
 }
 
-export default function AddLoanPage() {
+export default function EditLoanPage() {
     const { isLoggedIn } = useAuth();
     const { toast } = useToast();
+    const params = useParams();
     const router = useRouter();
     const [NewLoan, setNewLoan] = useState<Loan>({
+        id: -1,
         name: '',
         description: '',
         interestRate: 0,
@@ -42,12 +45,27 @@ export default function AddLoanPage() {
         initiationFee: 0,
         otherFee: 0
     });
-
     useEffect(() => {
         if (!isLoggedIn) {
             router.push('/login');
         }
+        getLoan();
     }, []);
+
+    const getLoan = async() => {
+        const { id } = params;
+        const getLoanResponse = await getLoanProductById(Number(id));
+        if (getLoanResponse.success && getLoanResponse.loanProduct){
+            setNewLoan(getLoanResponse.loanProduct);
+        }else{
+            toast({
+                variant: 'destructive',
+                title: 'Uh oh! Something went wrong.',
+                description: 'There was a problem retrieving the loan.',
+            });
+            router.push('/loans');
+        }
+    }
 
     useEffect(() => {
         if (!isLoggedIn) {
@@ -116,7 +134,7 @@ export default function AddLoanPage() {
             });
             return false;
         }
-        if (NewLoan.minAmount < 0){
+        if (NewLoan.minAmount! < 0){
             toast({
                 variant: 'destructive',
                 title: 'Invalid Entry',
@@ -148,7 +166,7 @@ export default function AddLoanPage() {
             });
             return false;
         }
-        if (NewLoan.otherFee < 0){
+        if (NewLoan.otherFee! < 0){
             toast({
                 variant: 'destructive',
                 title: 'Invalid Entry',
@@ -159,26 +177,44 @@ export default function AddLoanPage() {
         return true
     }
 
-    const createLoanProductClicked = async() => {
+    const updateLoanProductClicked = async() => {
         if(!validateLoanData()){
             return;
         }
-        const createdProductResponse = await createLoanProduct(NewLoan);
-        if (!createdProductResponse.success){
+        const updatedProductResponse = await updateLoanProductById(Number(params.id), NewLoan);
+        if (!updatedProductResponse.success){
             toast({
                 variant: 'destructive',
                 title: 'Uh oh! Something went wrong.',
-                description: createdProductResponse.error,
+                description: updatedProductResponse.error,
             });
             return
         }else{
             toast({
                 title: 'Success',
-                description: 'Loan Product Created Successfully',
+                description: 'Loan Product Updated Successfully',
             });
             router.push('/loans');
         }
 
+    }
+
+    const deleteLoanProductClicked = async() => {
+        const deleteLoanProductResponse = await deleteLoanProductById(Number(params.id));
+        if (!deleteLoanProductResponse.success){
+            toast({
+                variant: 'destructive',
+                title: 'Uh oh! Something went wrong.',
+                description: deleteLoanProductResponse.error,
+            });
+            return
+        }else{
+            toast({
+                title: 'Success',
+                description: 'Loan Product Deleted Successfully',
+            });
+            router.push('/loans');
+        }
     }
 
 
@@ -188,13 +224,13 @@ export default function AddLoanPage() {
                 <button onClick={() => {router.push('/loans')}} className="mr-2"> 
                     <FaArrowLeft />
                 </button>
-                <h1 className="text-2xl font-bold">Add Loan</h1>
+                <h1 className="text-2xl font-bold">Update Loan</h1>
             </div>
 
             <div className="flex justify-center items-center h-full">
                 <Card className={cn("w-full md:w-[80%] md:flex-row", "md:items-start")}>
                     <CardHeader className="text-center">
-                        <CardTitle>Add Loan</CardTitle>
+                        <CardTitle>Update Loan</CardTitle>
                     </CardHeader>
                     <CardContent className="md:grid md:grid-cols-2 md:gap-5 overflow-scroll">
                         <div className="col-span-2">
@@ -203,7 +239,7 @@ export default function AddLoanPage() {
                         </div>
                         <div className="col-span-2">
                             <label htmlFor='description' className="block text-xs font-medium text-gray-700 mb-[5px]">Loan Description*</label>
-                            <Textarea placeholder='Loan Description' className="col-span-2" id='description' value={NewLoan.description}  onChange={loanValueChanged}/>
+                            <Textarea placeholder='Loan Description' className="col-span-2" id='description' value={NewLoan.description || ''}  onChange={loanValueChanged}/>
                         </div>
                         <div>
                             <label htmlFor='interestRate' className="block text-xs font-medium text-gray-700 mb-[5px]">Interest Rate*</label>
@@ -219,7 +255,7 @@ export default function AddLoanPage() {
                         </div>
                         <div>
                             <label htmlFor='minAmount' className="block text-xs font-medium text-gray-700 mb-[5px]">Min Amount</label>
-                            <Input type='number' placeholder='Min Amount' className="w-full" id='minAmount' value={NewLoan.minAmount.toString()} onChange={loanValueChanged} />
+                            <Input type='number' placeholder='Min Amount' className="w-full" id='minAmount' value={NewLoan.minAmount?.toString() || 0} onChange={loanValueChanged} />
                         </div>
                         <div>
                             <label htmlFor='type' className="block text-xs font-medium text-gray-700 mb-[5px]">Loan Type*</label>
@@ -260,10 +296,34 @@ export default function AddLoanPage() {
                         </div>
                         <div>
                             <label htmlFor='otherFee' className="block text-xs font-medium text-gray-700 mb-[5px]">Other Fees</label>
-                            <Input type='number' placeholder='Other Fees' className="w-full" id='otherFee' value={NewLoan.otherFee.toString()} onChange={loanValueChanged} />
+                            <Input type='number' placeholder='Other Fees' className="w-full" id='otherFee' value={NewLoan.otherFee?.toString() || 0} onChange={loanValueChanged} />
                         </div>
-                        <div className="col-span-2 mt-5">
-                            <Button className='w-full' onClick={createLoanProductClicked}>Save</Button>
+                        {/* <div className="mt-5">
+                            <Button className='w-full' variant='destructive' onClick={createLoanProductClicked}>Delete Loan</Button>
+                        </div> */}
+                        <div className="mt-5">
+                        <Dialog>
+                            <DialogTrigger asChild>
+                                <Button className='w-full' variant='destructive'>Delete Loan</Button>
+                            </DialogTrigger>
+                            <DialogContent>
+                                <DialogHeader>
+                                    <DialogTitle>You are about to delete a loan.</DialogTitle>
+                                    <DialogDescription>Are you sure you want to delete this loan?</DialogDescription>
+                                </DialogHeader>
+                                <div className='flex flex-col items-center gap-4 md:flex-row md:item-center md:justify-evenly'>
+                                    <DialogClose asChild>
+                                        <Button className='w-full'>Cancel</Button>
+                                    </DialogClose>
+                                    <DialogClose asChild>
+                                        <Button className='w-full' variant='destructive' onClick={deleteLoanProductClicked}>Delete Loan</Button>
+                                    </DialogClose>
+                                </div>
+                            </DialogContent>
+                        </Dialog>
+                        </div>
+                        <div className="mt-5">
+                            <Button className='w-full' onClick={updateLoanProductClicked}>Save</Button>
                         </div>
                     </CardContent>
                 </Card>
