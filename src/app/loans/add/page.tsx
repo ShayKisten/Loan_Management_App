@@ -9,8 +9,11 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
 import {Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue,} from "@/components/ui/select"
 import { useToast } from "@/hooks/use-toast"
-import { createLoanProduct } from '@/actions/loan';
+import { Skeleton } from "@/components/ui/skeleton"
+import { createLoanProduct, generateLoanProductAI } from '@/actions/loan';
 import { FaArrowLeft } from 'react-icons/fa';
+import { CiChat1 } from 'react-icons/ci'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog"
 
 interface Loan {
     name: string;
@@ -42,6 +45,8 @@ export default function AddLoanPage() {
         initiationFee: 0,
         otherFee: 0
     });
+    const [UserPrompt, setUserPrompt] = useState('');
+    const [GeneratingLoan, setGeneratingLoan] = useState(false);
 
     useEffect(() => {
         if (!isLoggedIn) {
@@ -181,6 +186,39 @@ export default function AddLoanPage() {
 
     }
 
+    const generateLoan = async() => {
+        if (UserPrompt === ''){
+            toast({
+                variant: 'destructive',
+                title: 'Invalid Entry',
+                description: 'Please enter a prompt',
+            });
+            return;
+        }
+        setGeneratingLoan(true);
+        const generatedLoanResponse = await generateLoanProductAI(UserPrompt, NewLoan);
+        if (!generatedLoanResponse.success){
+            toast({
+                variant: 'destructive',
+                title: 'Uh oh! Something went wrong.',
+                description: generatedLoanResponse.response,
+            });
+            setGeneratingLoan(false);
+            return
+        }else{
+            setNewLoan((prevLoan) => {
+                return { ...prevLoan, ...generatedLoanResponse.response.loanProduct };
+            });
+            toast({
+                title: 'Success',
+                description: 'Loan Product Generated Successfully',
+            });
+            setGeneratingLoan(false);
+            setUserPrompt('');
+        }
+        console.log(generatedLoanResponse);
+    }
+
 
     return (
         <div className="p-4"> 
@@ -190,7 +228,7 @@ export default function AddLoanPage() {
                 </button>
                 <h1 className="text-2xl font-bold">Add Loan</h1>
             </div>
-
+            {(!GeneratingLoan)?
             <div className="flex justify-center items-center h-full">
                 <Card className={cn("w-full md:w-[80%] md:flex-row", "md:items-start")}>
                     <CardHeader className="text-center">
@@ -268,6 +306,36 @@ export default function AddLoanPage() {
                     </CardContent>
                 </Card>
             </div>
+            :
+            <div className="flex flex-col space-y-3">
+                <Skeleton className="h-[125px] w-[250px] rounded-xl" />
+                <div className="space-y-2">
+                    <Skeleton className="h-4 w-[250px]" />
+                    <Skeleton className="h-4 w-[200px]" />
+                </div>
+            </div>
+            }
+
+            <Dialog>
+                <DialogTrigger asChild>
+                    <div className='absolute flex items-center justify-center cursor-pointer bottom-[30px] right-[30px] p-4 bg-black w-[50px] h-[50px] z-5 rounded-full'>
+                        <CiChat1 className='text-white' />
+                    </div>
+                </DialogTrigger>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Chat</DialogTitle>
+                        <DialogDescription>Provide us with some of the loan details in plain english and let us fill in some of the product fields for you</DialogDescription>
+                    </DialogHeader>
+                    
+                    <div className='flex flex-col items-center gap-5'>
+                        <Input type='text' placeholder='Create a loan named...' value={UserPrompt} onChange={(e) => {setUserPrompt(e.target.value);}} />
+                        <DialogClose asChild>
+                            <Button className='w-full' onClick={generateLoan}>Send</Button>
+                        </DialogClose>
+                    </div>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }
