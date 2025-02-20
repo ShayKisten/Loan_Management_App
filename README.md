@@ -8,6 +8,7 @@ The Loan Management System provides a user-friendly interface for managing loan 
 
 *   **Loan Product Listing:** Displays a list of available loan products with key details.
 *   **Add Loan Product:**  Allows authorised users to add new loan products to the system.
+*   **AI Loan Generation:** Allows users to enter a prompt to speed up the generation of a loan.
 *   **Loan Details:** Provides a detailed view of individual loan products withthe ability to edit and delete them.
 *   **User Listing:** Displays a list of all created users and allows users to be deleted.
 *   **Add User:** Allows authorised users to create new users.
@@ -35,20 +36,29 @@ The Loan Management System provides a user-friendly interface for managing loan 
         ```
         DATABASE_URL=postgres://[user]:[password]@[host]:[port]/[database-name]
         ```
+4.  **Add Gemini API Key:**
 
-4.  **Run Prisma Migrations:**
+    *   Obtain an API Key from https://aistudio.google.com/
+    *   Add the API Key to the `.env` file:
+
+        ```bash
+        GEMINI_API_KEY=YOUR_API_KEY
+        ```
+
+
+5.  **Run Prisma Migrations:**
 
     ```bash
     npx prisma migrate dev --name init
     ```
 
-5.  **Generate Prisma Client:**
+6.  **Generate Prisma Client:**
 
     ```bash
     npx prisma generate
     ```
 
-6.  **Start the Development Server:**
+7.  **Start the Development Server:**
 
     ```bash
     npm run dev
@@ -71,5 +81,5 @@ The Loan Management System provides a user-friendly interface for managing loan 
 
 *   Implement advanced user authentication and authorization.
 *   Add more comprehensive error handling and user feedback.
-*   Implement robust client-side form validation.
+*   Expand on the AI capabilities throughout the app.
 *   Implement unit and integration tests.

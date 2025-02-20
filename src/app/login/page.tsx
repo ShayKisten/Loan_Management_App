@@ -51,8 +51,8 @@ export default function LoginPage() {
                     <CardDescription>Enter your credentials</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                    <Input placeholder="Email" type="email" value={Email} onChange={(e) => {setEmail(e.target.value);}}/>
-                    <Input placeholder="Password" type="password" value={Password} onChange={(e) => {setPassword(e.target.value);}} />
+                    <Input placeholder="Email" type="email" value={Email} onChange={(e) => {setEmail(e.target.value);}} onKeyDown={(e) => {if(e.key === 'Enter'){loginClicked()}}}/>
+                    <Input placeholder="Password" type="password" value={Password} onChange={(e) => {setPassword(e.target.value);}} onKeyDown={(e) => {if(e.key === 'Enter'){loginClicked()}}}/>
                     <Button className="w-full" onClick={loginClicked}>Login</Button>
                 </CardContent>
             </Card>
