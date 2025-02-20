@@ -75,11 +75,12 @@ The Loan Management System provides a user-friendly interface for managing loan 
 *   **Decimal Handling:**  Prisma's `Decimal` type is used for currency values.  These values are converted to JavaScript numbers in the server actions before being sent to the client to avoid serialization issues.
 *   **Error Handling:** Error handling is implemented in the server actions
 *   **Styling:** Tailwind CSS is used for styling.
-*   **API Interactions:** Server actions are used for database interactions.
+*   **API Interactions:** Server actions are used for database interactions. No authentication has been added due to timelines however this should be added before prod.
+*   **AI Functionality:** A very basic AI functionality has been added in the hopes of streamlining product creation. This AI functionality could be extended throughout the app. For example, generating analytics data on products etc.
 
 ## Future Development
 
-*   Implement advanced user authentication and authorization.
+*   Implement advanced authentication and authorization.
 *   Add more comprehensive error handling and user feedback.
 *   Expand on the AI capabilities throughout the app.
 *   Implement unit and integration tests.
