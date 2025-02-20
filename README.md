@@ -17,7 +17,7 @@ The Loan Management System provides a user-friendly interface for managing loan 
 
 1.  **Navigate to the Project Directory:**
 
-    ```bash
+    ```bash 
     cd path/to/project
     ```
 
